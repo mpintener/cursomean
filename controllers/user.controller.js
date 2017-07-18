@@ -1,7 +1,9 @@
 'use strict'
+// Middleware: metodo que se ejecuta en el controlador antes de que se ejecute la acción. En un peticion http lo primero que se ejecuta es el middleware.
 
 var bcrypt = require('bcrypt-nodejs');
 var User = require('../models/user');
+var jwt = require('../services/jwt');
 
 function pruebas(req, res){
 	res.status(200).send({
@@ -69,6 +71,9 @@ function login(req, res) {
 						// Devolver datos usuario
 						if (params.gethash) {
 							// devolver token de jwt
+							res.status(200).send({
+								token: jwt.createToken(user)
+							});
 						} else {
 							res.status(200).send({user});
 						}
