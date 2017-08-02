@@ -1,6 +1,8 @@
 'use strict'
 // Middleware: metodo que se ejecuta en el controlador antes de que se ejecute la acción. En un peticion http lo primero que se ejecuta es el middleware.
 
+var fs = require('fs');
+var path = require('path');
 var bcrypt = require('bcrypt-nodejs');
 var User = require('../models/user');
 var jwt = require('../services/jwt');
@@ -53,7 +55,7 @@ function saveUser(req, res){
 	}
 }
 
-function login(req, res) {
+function login(req, res){
 	var params = req.body;
 
 	var email = params.email;
@@ -84,10 +86,74 @@ function login(req, res) {
 			}
 		}
 	});
+}
+
+function updateUser(req, res){
+	var userId = req.params.id;
+	var update = req.body;
+
+	User.findByIdAndUpdate(userId, update, (err, userUpdated) => {
+		if (err) {
+			res.status(500).send({message: 'Error al actualizar el usuario'});
+		} else {
+			if (!userUpdated) {
+				res.status(404).send({message: 'No se ha podido actualizar el usuario'});
+			} else {
+				res.status(200).send({user: userUpdated});
+			}
+		}
+	});
+}
+
+function uploadImage(req, res){
+	var userId = req.params.id;
+	var file_name = 'No subido...';
+
+	if (req.files) {
+		var file_path = req.files.image.path;
+		var file_split = file_path.split('/');
+		var file_name = file_split[2];
+		console.log(file_split);
+
+		var ext_split = file_name.split('.');
+		var file_ext = ext_split[1];
+
+		if (file_ext == 'png' || file_ext == 'jpg' || file_ext == 'gif') {
+			User.findByIdAndUpdate(userId, {image: file_name}, (err, userUpdated) => {
+				if (!userUpdated) {
+					res.status(404).send({message: 'No se ha podido actualizar el usuario'});
+				} else {
+					res.status(200).send({user: userUpdated});
+				}
+			});
+		} else {
+			res.status(500).send({message: 'Formato de archivo no válido.'});	
+		}
+	} else {
+		res.status(200).send({message: 'No has subido ninguna imagen...'});
+	}
+}
+
+function getImageFile(req, res){
+	var imageFile = req.params.imageFile;
+	var imagePath = './uploads/users/' + imageFile;
+
+	fs.exists(imagePath, function(exists){
+		if (exists) {
+			res.sendFile(path.resolve(imagePath));
+		} else {
+			res.status(200).send({
+				message: 'La imagen no existe'
+			});
+		}
+	})
 
 }
 
 module.exports = {
+	getImageFile,
+	uploadImage,
+	updateUser,
 	pruebas,
 	saveUser,
 	login
