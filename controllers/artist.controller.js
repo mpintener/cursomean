@@ -2,6 +2,7 @@
 
 var fs = require('fs');
 var path = require('path');
+var mongoosePaginate = require('mongoose-pagination');
 
 var Artist = require('../models/artist');
 var Album = require('../models/album');
@@ -9,7 +10,7 @@ var Song = require('../models/song');
 
 function getArtist(req, res){
 	var artistId = req.params.id;
-	
+
 	Artist.findById(artistId, (err, artist) => {
 		if (err) {
 			res.status(500).send({
@@ -25,6 +26,32 @@ function getArtist(req, res){
 			}
 		}
 	});
+}
+
+function getArtists(req, res){
+	var page;
+	var itemsPerPage = 10;
+
+	req.params.page ? page = req.params.page : page = 1;
+
+	Artist.find().sort('name').paginate(page, itemsPerPage, (err, artists, total) => {
+		if (err) {
+			res.status(500).send({
+				message: 'Error en la peticion'
+			});
+		} else {
+			if (!artists) {
+				res.status(404).send({
+					message: 'No se encontraron artistas'
+				});
+			} else {
+				return res.status(200).send({
+					total_items: total,
+					artists: artists
+				});
+			}
+		}
+	})
 }
 
 function saveArtist(req, res){
@@ -56,5 +83,6 @@ function saveArtist(req, res){
 
 module.exports = {
 	getArtist,
+	getArtists,
 	saveArtist
 }
