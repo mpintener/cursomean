@@ -11,6 +11,7 @@ var app = express();
 var user_routes = require('./routes/user.routes');
 var artist_routes = require('./routes/artist.routes');
 var album_routes = require('./routes/album.routes');
+var song_routes = require('./routes/song.routes');
 
 // Configurar body parser
 app.use(bodyParser.urlencoded({extended:false}));
@@ -22,6 +23,7 @@ app.use(bodyParser.json()); // Convierte peticion a JSON
 app.use('/api', user_routes);
 app.use('/api', artist_routes);
 app.use('/api', album_routes);
+app.use('/api', song_routes);
 
 // exportar el modulo
 module.exports = app;
