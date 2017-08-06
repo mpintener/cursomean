@@ -117,10 +117,56 @@ function deleteSong(req, res) {
 	});
 }
 
+function uploadFile(req, res){
+	var songId = req.params.id;
+	var file_name = 'No subido...';
+
+	if (req.files) {
+		var file_path = req.files.file.path;
+		var file_split = file_path.split('/');
+		var file_name = file_split[2];
+		console.log(file_split);
+
+		var ext_split = file_name.split('.');
+		var file_ext = ext_split[1];
+
+		if (file_ext == 'mp3' || file_ext == 'ogg') {
+			Song.findByIdAndUpdate(songId, {file: file_name}, (err, songUpdated) => {
+				if (!songUpdated) {
+					res.status(404).send({message: 'No se ha podido actualizar el album'});
+				} else {
+					res.status(200).send({user: songUpdated});
+				}
+			});
+		} else {
+			res.status(500).send({message: 'Formato de archivo no válido.'});	
+		}
+	} else {
+		res.status(200).send({message: 'No has subido ningun audio...'});
+	}
+}
+
+function getSongFile(req, res){
+	var audioFile = req.params.audioFile;
+	var audioPath = './uploads/songs/' + audioFile;
+
+	fs.exists(audioPath, function(exists){
+		if (exists) {
+			res.sendFile(path.resolve(audioPath));
+		} else {
+			res.status(200).send({
+				message: 'La cancion no existe'
+			});
+		}
+	});
+}
+
 module.exports = {
 	getSong,
 	getSongs,
 	saveSong,
 	updateSong,
-	deleteSong
+	deleteSong,
+	getSongFile,
+	uploadFile
 }
