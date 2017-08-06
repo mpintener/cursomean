@@ -78,8 +78,29 @@ function saveSong(req, res) {
 	});
 }
 
+function updateSong(req, res) {
+	var songId = req.params.id;
+	var update = req.body;
+
+	Song.findByIdAndUpdate(songId, update, (err, songUpdated) => {
+		if (err) {
+			res.status(500).send({message: 'Error en la petición'});
+		} else {
+			if (!songUpdated) {
+				res.status(404).send({message: 'Error al actualizar la cancion'});
+			} else {
+				res.status(200).send({
+					message: 'Canción actualizada correctamente',
+					song: songUpdated
+				});
+			}
+		}
+	});
+}
+
 module.exports = {
 	getSong,
 	getSongs,
-	saveSong
+	saveSong,
+	updateSong
 }
